@@ -2,15 +2,23 @@
  * NOTE:
  * > KETIKA MENAMBAHKAN 'GAME PIECE' 
  *   PASTIKAN UNTUK MENAMBAHKAN JUGA 
- *   DI updateGameArea(). (Anda bebas memberi nama game piece Anda)
- * > _
+ *   DI updateGameArea(). (Anda bebas 
+ *   memberi nama game piece Anda)
+ * > IN GAME CONTROLLER MEMBUTUHKAN 
+ *   COMPONENT BUTTON DI DALAM CANVAS
  */
 
-var myGamePiece
+var myGamePiece, myUpBtn, myDownBtn, myLeftBtn, myRightBtn
 
 function startGame() {
     myGameArea.start()
     myGamePiece = new component(30, 30, "red", 10, 120)
+
+    // BTN COMPONENT
+    myUpBtn = new component(30, 30, "blue", 50, 10)
+    myDownBtn = new component(30, 30, "blue", 50, 70)
+    myLeftBtn = new component(30, 30, "blue", 20, 40)
+    myRightBtn = new component(30, 30, "blue", 80, 40)
 }
 
 // GAME AREA
@@ -20,7 +28,7 @@ var myGameArea = {
         this.canvas.width = '480'
         this.canvas.height = '270'
         this.canvas.style.backgroundColor = 'skyblue'
-        this.canvas.style.cursor = 'none'
+        // this.canvas.style.cursor = 'none'
         this.context = this.canvas.getContext('2d')
         document.body.insertBefore(this.canvas, document.body.childNodes[0])
         this.interval = setInterval(updateGameArea, 20)
@@ -35,9 +43,27 @@ var myGameArea = {
         })
 
         // MOUSE CONTROLLER
-        window.addEventListener('mousemove', function(e) {
-            myGameArea.x = e.pageX - (myGamePiece.width * 0.75)
-            myGameArea.y = e.pageY - (myGamePiece.height * 0.75)
+        // window.addEventListener('mousemove', function(e) {
+        //     myGameArea.x = e.pageX - (myGamePiece.width * 0.75)
+        //     myGameArea.y = e.pageY - (myGamePiece.height * 0.75)
+        // })
+
+        // IN GAME CONTROLLER
+        window.addEventListener('mousedown', function(e) {
+            myGameArea.x = e.pageX
+            myGameArea.y = e.pageY
+        })
+        window.addEventListener('mouseup', function(e) {
+            myGameArea.x = false
+            myGameArea.y = false
+        })
+        window.addEventListener('touchstart', function(e) {
+            myGameArea.x = e.pageX
+            myGameArea.y = e.pageY
+        })
+        window.addEventListener('touchend', function(e) {
+            myGameArea.x = false
+            myGameArea.y = false
         })
     },
     clear: function() {
@@ -58,6 +84,17 @@ function component(width, height, color, x, y) {
         ctx.fillStyle = color
         ctx.fillRect(this.x, this.y, this.width, this.height)
     }
+    this.clicked = function() {
+        var myleft = this.x
+        var myright = this.x + (this.width)
+        var mytop = this.y
+        var mybottom = this.y + (this.height)
+        var clicked = true
+        if((mybottom < myGameArea.y) || (mytop > myGameArea.y) || (myright < myGameArea.x) || (myleft > myGameArea.x)){
+            clicked = false
+        }
+        return clicked
+    }
     this.newPos = function() {
         this.x += this.speedX
         this.y += this.speedY
@@ -77,10 +114,32 @@ function updateGameArea() {
     if(myGameArea.keys && myGameArea.keys[40]) { myGamePiece.speedY = 1 }
 
     // MOUSE CONTROLLER
+    // if(myGameArea.x && myGameArea.y) {
+    //     myGamePiece.x = myGameArea.x
+    //     myGamePiece.y = myGameArea.y
+    // }
+
+    // IN GAME CONTROLLER
     if(myGameArea.x && myGameArea.y) {
-        myGamePiece.x = myGameArea.x
-        myGamePiece.y = myGameArea.y
+        if(myUpBtn.clicked()) {
+            myGamePiece.y -= 1
+        }
+        if(myDownBtn.clicked()) {
+            myGamePiece.y += 1
+        }
+        if(myLeftBtn.clicked()) {
+            myGamePiece.x -= 1
+        }
+        if(myRightBtn.clicked()) {
+            myGamePiece.x += 1
+        }
     }
+
+    // BTN COMPONENT
+    myUpBtn.update()
+    myDownBtn.update()
+    myLeftBtn.update()
+    myRightBtn.update()
 
     myGamePiece.newPos()
     myGamePiece.update()

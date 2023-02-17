@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <style>
+        button {
+            width: 100%;
+        }
+    </style>
+</head>
+<body onload="startGame()">
+    <script src="script.js"></script>
+
+    <hr>
+    <table>
+        <tr>
+            <td></td>
+            <td><button onmousedown="moveup()" onmouseup="stopMove()">UP</button></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><button onmousedown="moveleft()" onmouseup="stopMove()">LEFT</button></td>
+            <td></td>
+            <td><button onmousedown="moveright()" onmouseup="stopMove()">RIGHT</button></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button onmousedown="movedown()" onmouseup="stopMove()">DOWN</button></td>
+            <td></td>
+        </tr>
+</table>
+</body>
+</html>

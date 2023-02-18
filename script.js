@@ -8,7 +8,12 @@
  *   COMPONENT BUTTON DI DALAM CANVAS
  */
 
-var myGamePiece, myUpBtn, myDownBtn, myLeftBtn, myRightBtn
+var myGamePiece
+var myUpBtn
+var myDownBtn
+var myLeftBtn
+var myRightBtn
+var myObstacles = []
 
 function startGame() {
     myGameArea.start()
@@ -25,12 +30,13 @@ function startGame() {
 var myGameArea = {
     canvas: document.createElement('canvas'),
     start: function() {
-        this.canvas.width = '480'
-        this.canvas.height = '270'
+        this.canvas.width = 480
+        this.canvas.height = 270
         this.canvas.style.backgroundColor = 'skyblue'
         // this.canvas.style.cursor = 'none'
         this.context = this.canvas.getContext('2d')
         document.body.insertBefore(this.canvas, document.body.childNodes[0])
+        this.frameNo = 0
         this.interval = setInterval(updateGameArea, 20)
 
         // KEYBOARD CONTROLLER
@@ -69,6 +75,9 @@ var myGameArea = {
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
     },
+    stop: function() {
+        clearInterval(this.interval)
+    },
 }
 
 // MAKE COMPONENT
@@ -99,13 +108,56 @@ function component(width, height, color, x, y) {
         this.x += this.speedX
         this.y += this.speedY
     }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x
+        var myright = this.x + (this.width)
+        var mytop = this.y
+        var mybottom = this.y + (this.height)
+        var otherleft = otherobj.x
+        var otherright = otherobj.x + (otherobj.width)
+        var othertop = otherobj.y
+        var otherbottom = otherobj.y + (otherobj.height)
+        var crash = true
+        if((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false
+        }
+        return crash
+    }
 }
 
-// FRAMES
+// FRAMES/UPDATE AREA
 function updateGameArea() {
+    var x, y
+
+    for(i = 0; i < myObstacles.length; i++) {
+        if(myGamePiece.crashWith(myObstacles[i])) {
+            myGameArea.stop()
+            return
+        }
+    }
+
     myGameArea.clear()
+    myGameArea.frameNo++
+
+    if(myGameArea.frameNo == 1 || everyinterval(150)) {
+        x = myGameArea.canvas.width
+        minHeight = 20
+        maxHeight = 200
+        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight)
+        minGap = 50
+        maxGap = 200
+        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap)
+        myObstacles.push(new component(10, height, 'green', x, 0))
+        myObstacles.push(new component(10, x - height - gap, 'green', x, height + gap))
+    }
+
     myGamePiece.speedX = 0
     myGamePiece.speedY = 0
+
+    for(i = 0; i < myObstacles.length; i++) {
+        myObstacles[i].x--
+        myObstacles[i].update()
+    }
 
     // KEYBOARD CONTROLLER
     if(myGameArea.keys && myGameArea.keys[37]) { myGamePiece.speedX = -1 }
@@ -143,6 +195,14 @@ function updateGameArea() {
 
     myGamePiece.newPos()
     myGamePiece.update()
+}
+
+function everyinterval(n) {
+    if((myGameArea.frameNo / n) % 1 == 0) {
+        return true
+    }
+
+    return false
 }
 
 // MOVEMENT

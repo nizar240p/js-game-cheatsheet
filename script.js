@@ -9,21 +9,36 @@
  */
 
 var myGamePiece
+
 var myUpBtn
 var myDownBtn
 var myLeftBtn
 var myRightBtn
+
 var myObstacles = []
 
+var myScore
+var myBackground
+var mySound
+
 function startGame() {
-    myGameArea.start()
-    myGamePiece = new component(30, 30, "red", 10, 120)
+    // myGamePiece = new component(30, 30, "red", 10, 120)
+    myGamePiece = new component(40, 40, 'img/pesawat.png', 10, 120, 'image')
+    myBackground = new component(656, 270, 'img/langit.png', 0, 0, 'background')
 
     // BTN COMPONENT
     myUpBtn = new component(30, 30, "blue", 50, 10)
     myDownBtn = new component(30, 30, "blue", 50, 70)
     myLeftBtn = new component(30, 30, "blue", 20, 40)
     myRightBtn = new component(30, 30, "blue", 80, 40)
+
+    // SCORE COMPONENT
+    myScore = new component('30px', 'Consolas', 'black', 280, 40, 'text')
+
+    // SOUND
+    mySound = new sound('bgm/ledakan.mp3')
+
+    myGameArea.start()
 }
 
 // GAME AREA
@@ -81,7 +96,12 @@ var myGameArea = {
 }
 
 // MAKE COMPONENT
-function component(width, height, color, x, y) {
+function component(width, height, color, x, y, type) {
+    this.type = type
+    if(type == 'image' || type == 'background') {
+        this.image = new Image()
+        this.image.src = color
+    }
     this.width = width
     this.height = height
     this.speedX = 0
@@ -90,8 +110,19 @@ function component(width, height, color, x, y) {
     this.y = y
     this.update = function() {
         ctx = myGameArea.context
-        ctx.fillStyle = color
-        ctx.fillRect(this.x, this.y, this.width, this.height)
+        if(this.type == 'text') {
+            ctx.font = this.width + ' ' + this.height
+            ctx.fillStyle = color
+            ctx.fillText(this.text, this.x, this.y)
+        }else if(type == 'image' || type == 'background') {
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
+            if(type == 'background') {
+                ctx.drawImage(this.image, this.x + this.width, this.y, this.width, this.height)
+            }
+        }else{
+            ctx.fillStyle = color
+            ctx.fillRect(this.x, this.y, this.width, this.height)
+        }
     }
     this.clicked = function() {
         var myleft = this.x
@@ -107,6 +138,11 @@ function component(width, height, color, x, y) {
     this.newPos = function() {
         this.x += this.speedX
         this.y += this.speedY
+        if(this.type == 'background') {
+            if(this.x == -(this.width)) {
+                this.x = 0
+            }
+        }
     }
     this.crashWith = function(otherobj) {
         var myleft = this.x
@@ -123,6 +159,25 @@ function component(width, height, color, x, y) {
         }
         return crash
     }
+    // this.transform = function() {
+    //     this.image.src = 'img/ledakan.png'
+    // }
+}
+
+// SOUND
+function sound(src) {
+    this.sound = document.createElement('audio')
+    this.sound.src = src
+    this.sound.setAttribute('preload', 'auto')
+    this.sound.setAttribute('controls', 'none')
+    this.sound.style.display = 'none'
+    document.body.appendChild(this.sound)
+    this.play = function() {
+        this.sound.play()
+    }
+    this.stop = function() {
+        this.sound.pause()
+    }
 }
 
 // FRAMES/UPDATE AREA
@@ -131,14 +186,23 @@ function updateGameArea() {
 
     for(i = 0; i < myObstacles.length; i++) {
         if(myGamePiece.crashWith(myObstacles[i])) {
+            // myGamePiece.transform()
+            mySound.play()
             myGameArea.stop()
             return
         }
     }
 
     myGameArea.clear()
+
+    // BACKGROUND
+    myBackground.speedX = -1
+    myBackground.newPos()
+    myBackground.update()
+
     myGameArea.frameNo++
 
+    // OBSTACLE COMPONENT
     if(myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width
         minHeight = 20
@@ -193,6 +257,10 @@ function updateGameArea() {
     myLeftBtn.update()
     myRightBtn.update()
 
+    // SCORE COMPONENT
+    myScore.text = 'SCORE: ' + myGameArea.frameNo
+    myScore.update()
+
     myGamePiece.newPos()
     myGamePiece.update()
 }
@@ -206,20 +274,27 @@ function everyinterval(n) {
 }
 
 // MOVEMENT
-function moveup() {
-    myGamePiece.speedY -= 1
-}
+// function moveup() {
+//     myGamePiece.speedY -= 1
+// }
 
-function movedown() {
-    myGamePiece.speedY += 1
-}
+// function movedown() {
+//     myGamePiece.speedY += 1
+// }
 
-function moveleft() {
-    myGamePiece.speedX -= 1
-}
+// function moveleft() {
+//     myGamePiece.speedX -= 1
+// }
 
-function moveright() {
-    myGamePiece.speedX += 1
+// function moveright() {
+//     myGamePiece.speedX += 1
+// }
+
+function move(dir) {
+    if(dir == 'up') { myGamePiece.speedY -= 1 }
+    if(dir == 'down') { myGamePiece.speedY += 1 }
+    if(dir == 'left') { myGamePiece.speedX -= 1 }
+    if(dir == 'right') { myGamePiece.speedX += 1 }
 }
 
 function stopMove() {
